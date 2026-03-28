@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Soporte Rotork IA</title>
+
     <style>
         body {
             background-color: #0f172a;
@@ -15,6 +16,7 @@
             width: 100%;
             height: 120px;
             margin-bottom: 20px;
+            padding: 10px;
         }
 
         button {
@@ -30,9 +32,11 @@
             margin-top: 20px;
             padding: 15px;
             background: #1e293b;
+            white-space: pre-wrap;
         }
     </style>
 </head>
+
 <body>
 
     <h1>🔧 Soporte Rotork IA</h1>
@@ -49,6 +53,15 @@
         async function analizarFalla() {
             const descripcion = document.getElementById("descripcion").value;
 
+            const respuestaDiv = document.getElementById("respuesta");
+
+            if (!descripcion) {
+                respuestaDiv.innerText = "⚠️ Escribe una falla primero";
+                return;
+            }
+
+            respuestaDiv.innerText = "⏳ Analizando...";
+
             const formData = new FormData();
             formData.append("descripcion", descripcion);
 
@@ -60,11 +73,10 @@
 
                 const data = await response.json();
 
-                document.getElementById("respuesta").innerText = data.respuesta;
+                respuestaDiv.innerText = data.respuesta;
 
             } catch (error) {
-                document.getElementById("respuesta").innerText =
-                    "❌ Error conectando con el servidor";
+                respuestaDiv.innerText = "❌ Error conectando con el servidor";
             }
         }
     </script>
