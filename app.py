@@ -46,7 +46,7 @@ Entrega:
 """
 
         response = client.chat.completions.create(
-            model="llama3.3-70b-versatile",
+            model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}]
         )
 
