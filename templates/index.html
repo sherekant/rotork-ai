@@ -1,85 +1,125 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Soporte Rotork IA</title>
+<meta charset="UTF-8">
+<title>Soporte Rotork IA</title>
 
-    <style>
-        body {
-            background-color: #0f172a;
-            color: white;
-            font-family: Arial;
-            padding: 40px;
-        }
+<style>
+body {
+    background: #0f172a;
+    color: white;
+    font-family: Arial;
+    padding: 30px;
+}
 
-        textarea {
-            width: 100%;
-            height: 120px;
-            margin-bottom: 20px;
-            padding: 10px;
-        }
+h1 {
+    margin-bottom: 20px;
+}
 
-        button {
-            padding: 10px 20px;
-            background: #06b6d4;
-            border: none;
-            color: black;
-            font-weight: bold;
-            cursor: pointer;
-        }
+.botones {
+    margin-bottom: 20px;
+}
 
-        #respuesta {
-            margin-top: 20px;
-            padding: 15px;
-            background: #1e293b;
-            white-space: pre-wrap;
-        }
-    </style>
+.botones button {
+    margin-right: 10px;
+    padding: 10px;
+    background: #1e293b;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.botones button.activo {
+    background: #06b6d4;
+    color: black;
+}
+
+textarea {
+    width: 100%;
+    height: 120px;
+    margin-bottom: 20px;
+}
+
+input {
+    margin-bottom: 20px;
+}
+
+button.analizar {
+    background: #06b6d4;
+    padding: 12px 25px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#respuesta {
+    margin-top: 20px;
+    background: #1e293b;
+    padding: 20px;
+}
+</style>
+
 </head>
-
 <body>
 
-    <h1>🔧 Soporte Rotork IA</h1>
+<h1>🔧 Soporte Rotork IA</h1>
 
-    <textarea id="descripcion" placeholder="Describe la falla..."></textarea>
+<div class="botones">
+    <button onclick="seleccionar('AUTO')" id="AUTO">AUTO</button>
+    <button onclick="seleccionar('IQ')" id="IQ">IQ</button>
+    <button onclick="seleccionar('CK')" id="CK">CK</button>
+    <button onclick="seleccionar('MASTER')" id="MASTER">MASTER</button>
+</div>
 
-    <br>
+<textarea id="descripcion" placeholder="Describe la falla..."></textarea>
 
-    <button onclick="analizarFalla()">Analizar</button>
+<input type="file" id="imagen">
 
-    <div id="respuesta"></div>
+<br>
 
-    <script>
-        async function analizarFalla() {
-            const descripcion = document.getElementById("descripcion").value;
+<button class="analizar" onclick="analizar()">Analizar Falla</button>
 
-            const respuestaDiv = document.getElementById("respuesta");
+<div id="respuesta"></div>
 
-            if (!descripcion) {
-                respuestaDiv.innerText = "⚠️ Escribe una falla primero";
-                return;
-            }
+<script>
+let sistemaSeleccionado = "AUTO";
 
-            respuestaDiv.innerText = "⏳ Analizando...";
+function seleccionar(sistema) {
+    sistemaSeleccionado = sistema;
 
-            const formData = new FormData();
-            formData.append("descripcion", descripcion);
+    document.querySelectorAll(".botones button").forEach(b => b.classList.remove("activo"));
+    document.getElementById(sistema).classList.add("activo");
+}
 
-            try {
-                const response = await fetch("/analizar", {
-                    method: "POST",
-                    body: formData
-                });
+async function analizar() {
+    const descripcion = document.getElementById("descripcion").value;
+    const imagen = document.getElementById("imagen").files[0];
 
-                const data = await response.json();
+    const formData = new FormData();
+    formData.append("descripcion", descripcion);
+    formData.append("sistema", sistemaSeleccionado);
 
-                respuestaDiv.innerText = data.respuesta;
+    if (imagen) {
+        formData.append("imagen", imagen);
+    }
 
-            } catch (error) {
-                respuestaDiv.innerText = "❌ Error conectando con el servidor";
-            }
-        }
-    </script>
+    document.getElementById("respuesta").innerText = "⏳ Analizando...";
+
+    try {
+        const response = await fetch("/analizar", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        document.getElementById("respuesta").innerText = data.respuesta;
+
+    } catch (error) {
+        document.getElementById("respuesta").innerText = "❌ Error conectando con el servidor";
+    }
+}
+</script>
 
 </body>
 </html>
