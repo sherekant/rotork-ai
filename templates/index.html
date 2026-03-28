@@ -1,23 +1,73 @@
-<script>
-async function analizarFalla() {
-    const descripcion = document.querySelector("textarea").value;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Soporte Rotork IA</title>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: white;
+            font-family: Arial;
+            padding: 40px;
+        }
 
-    const formData = new FormData();
-    formData.append("descripcion", descripcion);
+        textarea {
+            width: 100%;
+            height: 120px;
+            margin-bottom: 20px;
+        }
 
-    try {
-        const response = await fetch("/analizar", {
-            method: "POST",
-            body: formData
-        });
+        button {
+            padding: 10px 20px;
+            background: #06b6d4;
+            border: none;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-        const data = await response.json();
+        #respuesta {
+            margin-top: 20px;
+            padding: 15px;
+            background: #1e293b;
+        }
+    </style>
+</head>
+<body>
 
-        document.getElementById("respuesta").innerText = data.respuesta;
+    <h1>🔧 Soporte Rotork IA</h1>
 
-    } catch (error) {
-        document.getElementById("respuesta").innerText =
-            "❌ No se pudo conectar con el servidor";
-    }
-}
-</script>
+    <textarea id="descripcion" placeholder="Describe la falla..."></textarea>
+
+    <br>
+
+    <button onclick="analizarFalla()">Analizar</button>
+
+    <div id="respuesta"></div>
+
+    <script>
+        async function analizarFalla() {
+            const descripcion = document.getElementById("descripcion").value;
+
+            const formData = new FormData();
+            formData.append("descripcion", descripcion);
+
+            try {
+                const response = await fetch("/analizar", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                document.getElementById("respuesta").innerText = data.respuesta;
+
+            } catch (error) {
+                document.getElementById("respuesta").innerText =
+                    "❌ Error conectando con el servidor";
+            }
+        }
+    </script>
+
+</body>
+</html>
