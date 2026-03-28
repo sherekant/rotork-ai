@@ -44,6 +44,8 @@ def home():
 
 @app.route("/analizar", methods=["POST"])
 def analizar():
+
+    # 🔥 Evita crash si no hay API KEY
     if not client:
         return jsonify({"error": "❌ API KEY no configurada en el servidor"})
 
@@ -112,8 +114,9 @@ Responde en español técnico con:
 
 
 # ==============================
-# MAIN
+# MAIN (IMPORTANTE PARA RAILWAY)
 # ==============================
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 5000))  # 🔥 CLAVE
+    app.run(host="0.0.0.0", port=port)
