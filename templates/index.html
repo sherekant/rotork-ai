@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Rotork IA — Diagnóstico Técnico</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #0a0c0f;
+    --panel:   #111418;
+    --border:  #1e2530;
+    --accent:  #00c8ff;
+    --accent2: #ff6b00;
+    --text:    #d0dce8;
+    --muted:   #556070;
+    --success: #00e676;
+    --danger:  #ff3d3d;
+    --warn:    #ffab00;
+    --mono:    'Share Tech Mono', monospace;
+    --main:    'Rajdhani', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    width: 38px; height: 38px; flex-shrink: 0;
+    background: var(--accent);
+    clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo svg { width: 20px; height: 20px; fill: #0a0c0f; }
+  .htext h1 {
+    font-size: 17px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent);
+  }
+  .htext p {
+    font-size: 10px; color: var(--muted);
+    font-family: var(--mono); letter-spacing: 1px;
+  }
+  .online {
+    margin-left: auto;
+    font-size: 10px; font-family: var(--mono);
+    color: var(--success);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .online::before {
+    content:''; width:7px; height:7px; border-radius:50%;
+    background: var(--success);
+    box-shadow: 0 0 8px var(--success);
+    animation: blink 2s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* ── CONTENIDO ── */
+  main {
+    flex:1; padding: 18px 14px 90px;
+    max-width: 580px; margin: 0 auto; width: 100%;
+  }
+
+  .label {
+    font-size: 10px; font-family: var(--mono);
+    color: var(--muted); letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+
+  /* ── TABS DE SISTEMA ── */
+  .tabs {
+    display: flex; gap: 6px; margin-bottom: 18px;
+  }
+  .tab {
+    flex:1; padding: 9px 4px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-family: var(--main); font-size: 12px;
+    font-weight: 700; letter-spacing: 1px;
+    cursor: pointer; text-align: center;
+    transition: all .2s; text-transform: uppercase;
+  }
+  .tab:hover  { border-color: var(--accent); color: var(--accent); }
+  .tab.active {
+    background: rgba(0,200,255,.08);
+    border-color: var(--accent); color: var(--accent);
+    box-shadow: 0 0 12px rgba(0,200,255,.15);
+  }
+
+  /* ── TEXTAREA ── */
+  .label.mt { margin-top: 18px; }
+  textarea {
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--main); font-size: 15px;
+    padding: 13px; resize: none; height: 95px;
+    transition: border-color .2s; outline: none;
+  }
+  textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0,200,255,.08);
+  }
+  textarea::placeholder { color: var(--muted); }
+
+  /* ── UPLOAD ── */
+  .upload {
+    border: 1.5px dashed var(--border);
+    border-radius: 8px; padding: 18px;
+    text-align: center; cursor: pointer;
+    transition: all .2s; background: var(--panel);
+    position: relative;
+  }
+  .upload:hover, .upload.over {
+    border-color: var(--accent2);
+    background: rgba(255,107,0,.05);
+  }
+  .upload input[type=file] {
+    position: absolute; inset:0; opacity:0;
+    cursor: pointer; width:100%; height:100%;
+  }
+  .upload .ico { font-size: 26px; margin-bottom: 5px; }
+  .upload p { font-size: 13px; color: var(--muted); }
+  .upload strong { color: var(--accent2); }
+
+  #prev { margin-top: 10px; }
+  #prev img {
+    width:100%; max-height:200px; object-fit:cover;
+    border-radius: 8px; border: 1px solid var(--border);
+  }
+  #prev .rm {
+    display:block; text-align:center; margin-top:5px;
+    font-size:12px; color:var(--danger);
+    cursor:pointer; font-family:var(--mono);
+  }
+
+  /* ── BOTÓN ANALIZAR ── */
+  .btn {
+    width:100%; margin-top:18px;
+    background: var(--accent); color: #0a0c0f;
+    border:none; border-radius:8px; padding:15px;
+    font-family:var(--main); font-size:15px;
+    font-weight:700; letter-spacing:3px;
+    text-transform:uppercase; cursor:pointer;
+    transition: all .2s;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .btn:hover {
+    background:#33d6ff; transform:translateY(-1px);
+    box-shadow: 0 4px 20px rgba(0,200,255,.3);
+  }
+  .btn:active  { transform:translateY(0); }
+  .btn:disabled {
+    background:var(--muted); cursor:not-allowed;
+    transform:none; box-shadow:none;
+  }
+
+  /* ── LOADER ── */
+  .loader {
+    display:none; flex-direction:column;
+    align-items:center; margin-top:28px; gap:10px;
+  }
+  .loader.on { display:flex; }
+  .bar {
+    width:100%; height:3px;
+    background:var(--border); border-radius:2px; overflow:hidden;
+  }
+  .bar::after {
+    content:''; display:block; height:100%;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    animation: sweep 1.4s linear infinite;
+  }
+  @keyframes sweep { from{transform:translateX(-100%)} to{transform:translateX(200%)} }
+  .loader p {
+    font-family:var(--mono); font-size:11px;
+    color:var(--accent); letter-spacing:2px;
+    animation: txtblink 1.2s ease-in-out infinite;
+  }
+  @keyframes txtblink { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  /* ── ERROR ── */
+  .err {
+    margin-top:16px; display:none;
+    background:rgba(255,61,61,.08);
+    border:1px solid rgba(255,61,61,.3);
+    border-radius:8px; padding:13px;
+    font-family:var(--mono); font-size:12px;
+    color:var(--danger);
+  }
+  .err.on { display:block; }
+
+  /* ── RESULTADO ── */
+  #rbox { display:none; margin-top:22px; }
+  #rbox.on { display:block; }
+  .rhead {
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:10px;
+  }
+  .rhead h2 {
+    font-size:12px; font-family:var(--mono);
+    letter-spacing:2px; color:var(--accent);
+    text-transform:uppercase;
+  }
+  .stag {
+    margin-left:auto; font-size:10px;
+    padding:3px 10px; border-radius:20px;
+    font-family:var(--mono); letter-spacing:1px;
+    text-transform:uppercase;
+  }
+  .t-iq3    { background:rgba(0,200,255,.1);  color:var(--accent);  border:1px solid rgba(0,200,255,.3); }
+  .t-ck     { background:rgba(255,107,0,.1);  color:var(--accent2); border:1px solid rgba(255,107,0,.3); }
+  .t-master { background:rgba(0,230,118,.1);  color:var(--success); border:1px solid rgba(0,230,118,.3); }
+
+  #rcontent {
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:8px; padding:15px;
+    font-size:14px; line-height:1.8;
+    white-space:pre-wrap; word-break:break-word;
+    font-family:var(--main); font-weight:500;
+  }
+  .l-sistema { color:var(--accent);  font-weight:700; }
+  .l-diag    { color:var(--text); }
+  .l-causa   { color:var(--warn); }
+  .l-accion  { color:var(--success); }
+  .l-verif   { color:#99aacc; }
+  .l-critico { color:var(--danger);  font-weight:700; }
+  .l-alto    { color:var(--warn);    font-weight:700; }
+  .l-medio   { color:var(--accent);  font-weight:700; }
+  .l-bajo    { color:var(--success); font-weight:700; }
+
+  .bcopy {
+    width:100%; margin-top:8px;
+    background:transparent;
+    border:1px solid var(--border);
+    color:var(--muted); border-radius:6px; padding:10px;
+    font-family:var(--mono); font-size:11px;
+    letter-spacing:1px; cursor:pointer; transition:all .2s;
+  }
+  .bcopy:hover { border-color:var(--accent); color:var(--accent); }
+
+  footer {
+    text-align:center; padding:10px;
+    font-size:10px; font-family:var(--mono);
+    color:var(--muted); letter-spacing:1px;
+    border-top:1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18L20 8.5v7l-8 4-8-4v-7l8-4.32z"/></svg>
+  </div>
+  <div class="htext">
+    <h1>Rotork IA</h1>
+    <p>DIAGNÓSTICO TÉCNICO DE CAMPO</p>
+  </div>
+  <div class="online">EN LÍNEA</div>
+</header>
+
+<main>
+
+  <p class="label">// Sistema a diagnosticar</p>
+  <div class="tabs">
+    <button class="tab active" onclick="selTab(this,'auto')">AUTO</button>
+    <button class="tab" onclick="selTab(this,'iq3')">IQ3</button>
+    <button class="tab" onclick="selTab(this,'ck')">CK</button>
+    <button class="tab" onclick="selTab(this,'master')">MASTER</button>
+  </div>
+
+  <p class="label mt">// Descripción de la falla</p>
+  <textarea id="falla" placeholder="Ej: Actuador muestra TORQUE TRIP y no responde a comandos remotos..."></textarea>
+
+  <p class="label mt">// Foto del display o equipo (opcional)</p>
+  <div class="upload" id="uarea">
+    <input type="file" id="imagen" accept="image/*" capture="environment" onchange="prevImg(this)">
+    <div class="ico">📷</div>
+    <p>Toca para <strong>tomar foto</strong> o seleccionar imagen</p>
+  </div>
+  <div id="prev"></div>
+
+  <button class="btn" onclick="analizar()" id="btnMain">
+    <span>⚡</span> ANALIZAR FALLA
+  </button>
+
+  <div class="loader" id="loader">
+    <div class="bar"></div>
+    <p>CONSULTANDO MANUALES ROTORK...</p>
+  </div>
+
+  <div class="err" id="errBox"></div>
+
+  <div id="rbox">
+    <div class="rhead">
+      <h2>▶ DIAGNÓSTICO</h2>
+      <span class="stag" id="stag">—</span>
+    </div>
+    <div id="rcontent"></div>
+    <button class="bcopy" onclick="copiar()">⎘ COPIAR DIAGNÓSTICO</button>
+  </div>
+
+</main>
+
+<footer>ROTORK AI FIELD ASSISTANT v2.0 — POWERED BY GOOGLE GEMINI</footer>
+
+<script>
+let sistSel = "auto";
+
+function selTab(el, val) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  el.classList.add("active");
+  sistSel = val;
+}
+
+function prevImg(input) {
+  const c = document.getElementById("prev");
+  if (!input.files || !input.files[0]) { c.innerHTML = ""; return; }
+  const url = URL.createObjectURL(input.files[0]);
+  c.innerHTML = `<img src="${url}"><span class="rm" onclick="rmImg()">✕ Quitar imagen</span>`;
+}
+function rmImg() {
+  document.getElementById("imagen").value = "";
+  document.getElementById("prev").innerHTML = "";
+}
+
+function esc(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function colorear(texto) {
+  return texto.split("\n").map(l => {
+    if (l.includes("SISTEMA IDENTIFICADO")) return `<span class="l-sistema">${esc(l)}</span>`;
+    if (l.includes("DIAGNÓSTICO"))          return `<span class="l-diag">${esc(l)}</span>`;
+    if (l.includes("CAUSAS"))               return `<span class="l-causa">${esc(l)}</span>`;
+    if (l.includes("ACCIONES"))             return `<span class="l-accion">${esc(l)}</span>`;
+    if (l.includes("VERIFICACIONES"))       return `<span class="l-verif">${esc(l)}</span>`;
+    if (l.includes("CRÍTICO"))  return `<span class="l-critico">${esc(l)}</span>`;
+    if (l.includes("ALTO"))     return `<span class="l-alto">${esc(l)}</span>`;
+    if (l.includes("MEDIO"))    return `<span class="l-medio">${esc(l)}</span>`;
+    if (l.includes("BAJO"))     return `<span class="l-bajo">${esc(l)}</span>`;
+    return esc(l);
+  }).join("\n");
+}
+
+async function analizar() {
+  const falla = document.getElementById("falla").value.trim();
+  const file  = document.getElementById("imagen").files[0];
+
+  if (!falla && !file) {
+    showErr("⚠️ Escribe la falla o adjunta una imagen del equipo.");
+    return;
+  }
+
+  hideErr();
+  document.getElementById("rbox").classList.remove("on");
+  document.getElementById("loader").classList.add("on");
+  document.getElementById("btnMain").disabled = true;
+
+  const fd = new FormData();
+  fd.append("falla", falla);
+  fd.append("sistema_forzado", sistSel);
+  if (file) fd.append("imagen", file);
+
+  try {
+    const res  = await fetch("/analizar", { method:"POST", body:fd });
+    const data = await res.json();
+
+    document.getElementById("loader").classList.remove("on");
+    document.getElementById("btnMain").disabled = false;
+
+    if (data.error) { showErr(data.error); return; }
+
+    // Tag del sistema
+    const tag = document.getElementById("stag");
+    const s   = (data.sistema || "").toLowerCase();
+    tag.textContent = data.sistema || "—";
+    tag.className   = "stag";
+    if      (s.includes("iq3"))    tag.classList.add("t-iq3");
+    else if (s.includes("ck"))     tag.classList.add("t-ck");
+    else                           tag.classList.add("t-master");
+
+    document.getElementById("rcontent").innerHTML = colorear(data.resultado);
+    document.getElementById("rbox").classList.add("on");
+    document.getElementById("rbox").scrollIntoView({ behavior:"smooth", block:"start" });
+
+  } catch(e) {
+    document.getElementById("loader").classList.remove("on");
+    document.getElementById("btnMain").disabled = false;
+    showErr("❌ No se pudo conectar con el servidor. ¿Está Flask corriendo?");
+  }
+}
+
+async function copiar() {
+  const txt = document.getElementById("rcontent").innerText;
+  try {
+    await navigator.clipboard.writeText(txt);
+    const b = document.querySelector(".bcopy");
+    b.textContent = "✓ COPIADO";
+    setTimeout(() => b.textContent = "⎘ COPIAR DIAGNÓSTICO", 2000);
+  } catch(e) { alert("No se pudo copiar automáticamente."); }
+}
+
+function showErr(msg) {
+  const e = document.getElementById("errBox");
+  e.textContent = msg; e.classList.add("on");
+}
+function hideErr() {
+  document.getElementById("errBox").classList.remove("on");
+}
+
+// Drag & drop en área de imagen
+const ua = document.getElementById("uarea");
+ua.addEventListener("dragover",  e => { e.preventDefault(); ua.classList.add("over"); });
+ua.addEventListener("dragleave", () => ua.classList.remove("over"));
+ua.addEventListener("drop", e => {
+  e.preventDefault(); ua.classList.remove("over");
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith("image/")) {
+    const dt = new DataTransfer(); dt.items.add(f);
+    document.getElementById("imagen").files = dt.files;
+    prevImg(document.getElementById("imagen"));
+  }
+});
+</script>
+</body>
+</html>
