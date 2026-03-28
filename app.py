@@ -6,15 +6,21 @@ import os
 app = Flask(__name__, template_folder="templates", static_folder=".")
 
 # ==============================
-# CONFIGURACIÓN API KEY (SEGURA)
+# CONFIG API KEY (ROBUSTO)
 # ==============================
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+def get_client():
+    api_key = os.getenv("GROQ_API_KEY")
 
-if not GROQ_API_KEY:
-    print("⚠️ GROQ_API_KEY no configurada")
-    client = None
-else:
-    client = Groq(api_key=GROQ_API_KEY)
+    if not api_key:
+        print("❌ GROQ_API_KEY no encontrada en entorno")
+        return None
+
+    try:
+        return Groq(api_key=api_key)
+    except Exception as e:
+        print("❌ Error creando cliente:", e)
+        return None
+
 
 MODELO_VISION = "meta-llama/llama-4-scout-17b-16e-instruct"
 MODELO_TEXTO  = "llama-3.3-70b-versatile"
@@ -23,7 +29,6 @@ MODELO_TEXTO  = "llama-3.3-70b-versatile"
 # ==============================
 # FUNCIONES
 # ==============================
-
 def imagen_a_base64(file):
     try:
         img_bytes = file.read()
@@ -36,7 +41,6 @@ def imagen_a_base64(file):
 # ==============================
 # RUTAS
 # ==============================
-
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -45,9 +49,10 @@ def home():
 @app.route("/analizar", methods=["POST"])
 def analizar():
 
-    # 🔥 Evita crash si no hay API KEY
+    client = get_client()
+
     if not client:
-        return jsonify({"error": "❌ API KEY no configurada en el servidor"})
+        return jsonify({"error": "❌ API KEY no configurada en el servidor (Railway)"})
 
     falla = request.form.get("falla", "").strip()
     file = request.files.get("imagen")
@@ -56,12 +61,12 @@ def analizar():
         return jsonify({"error": "⚠️ Ingresa texto o imagen"})
 
     prompt = f"""
-Eres un experto en diagnóstico técnico de actuadores Rotork (IQ3, CK y Pakscan).
+Eres experto en diagnóstico técnico de actuadores Rotork (IQ3, CK y Pakscan).
 
 Analiza la siguiente falla:
 {falla}
 
-Responde en español técnico con:
+Responde con:
 - Diagnóstico
 - Causas probables
 - Acciones recomendadas
@@ -90,33 +95,26 @@ Responde en español técnico con:
             modelo = MODELO_VISION
 
         else:
-            messages = [{
-                "role": "user",
-                "content": prompt
-            }]
+            messages = [{"role": "user", "content": prompt}]
             modelo = MODELO_TEXTO
 
         response = client.chat.completions.create(
             model=modelo,
             messages=messages,
-            max_tokens=1200,
-            temperature=0.3
+            max_tokens=1200
         )
 
-        resultado = response.choices[0].message.content
-
         return jsonify({
-            "resultado": resultado
+            "resultado": response.choices[0].message.content
         })
 
     except Exception as e:
-        return jsonify({"error": f"❌ Error: {str(e)}"})
+        return jsonify({"error": str(e)})
 
 
 # ==============================
-# MAIN (IMPORTANTE PARA RAILWAY)
+# MAIN
 # ==============================
-
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # 🔥 CLAVE
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
